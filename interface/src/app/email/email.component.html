@@ -1,0 +1,25 @@
+<div>
+
+    <form class="form" [formGroup]="emailForm" (ngSubmit) = "send_mail()">
+        <div class="email_input">
+            <label for="email">enter your email to receive OTP Code: </label>
+            <input id="email" type="text" placeholder="xxx@gmail.com" formControlName="email" [class.is-invalid] = "emailnoValid" >
+        </div>
+        <button class="button_send_otp" type="submit" [disabled] = "emailForm.invalid" >Send OTP</button>
+        <div id="email_valid" *ngIf="(email_status|async)==='INVALID' && !mailed"> "Your email address is invalid, please enter in the form of 'xxx@xxx'" </div>
+        <div id="mailed" *ngIf="mailed">{{"mailing..."}}</div>
+    </form>
+
+    
+    
+
+    <div>
+        <label for="otpCode">OTP code (Press Enter to Submit) : </label>
+        <input id="otpCode" [(ngModel)]="inputCode"   placeholder="OTP CODE" (change)="checkValid()">
+    </div>
+
+    <div *ngIf="inputCode">
+        MFA Mail Result: {{ result }}
+    </div>
+
+</div>

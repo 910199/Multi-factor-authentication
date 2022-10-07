@@ -1,0 +1,35 @@
+/* You can add global styles to this file, and also import other style files */
+*{
+    font-family: 'Roboto',Arial,sans-serif;
+
+}
+
+.email_input{
+    display:inline;
+    margin-right: 1em;
+}
+
+form{
+    margin-bottom: 1em;
+}
+
+ol{
+    display: inline;
+    margin-left: 1em;
+}
+
+.home{
+    text-align: center;
+}
+
+ul{
+    text-align: center;
+}
+
+
+
+#email_valid{
+    display: inline-block;
+    color:red;
+}
+
