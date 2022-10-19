@@ -28,6 +28,7 @@ namespace MFA_POC
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<Dictionary<string, User>, Dictionary<string, User>>();
+            services.AddSingleton<Dictionary<string, User_qrcode>, Dictionary<string, User_qrcode>>();
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddCors(options =>
@@ -38,6 +39,7 @@ namespace MFA_POC
                                       builder.AllowAnyOrigin().AllowAnyHeader();
                                   });
             });
+
 
         }
 

@@ -2,12 +2,21 @@
     <h1 class="home">Ways to do Muti-Factor Authentication</h1>
 <div>
     <ul>
-        <ol><a [routerLink]="['qrcode']"
+        <ol><a [routerLink]="['qrcode',{userid:userid}]"
         > Verify through Time-based OTP using QR Code </a>
         </ol>
-        <ol><a [routerLink]="['email']"
+        <ol><a [routerLink]="['email',{userid:userid}]"
         > Verify OTP through Email </a>
         </ol>
     </ul>
 </div>
+
+
+<div>
+    <label for="userid">userid : </label>
+    <input id="userid" [(ngModel)]="userid">
+</div>
+
+<div></div>
+
 </div>

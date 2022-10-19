@@ -2,6 +2,7 @@ import { Component,Input,OnInit } from '@angular/core';
 import { FormBuilder,Validators  } from '@angular/forms';
 import { HttpClient,HttpHeaders} from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 
 
 @Component({
@@ -18,15 +19,20 @@ export class EmailComponent implements OnInit {
   })
   email_status = this.emailForm.get("email")?.statusChanges ;
   mailed = false;
+  userid!:string;
   
 
-  constructor(private formbuilder: FormBuilder,private http: HttpClient) { }
+  constructor(private formbuilder: FormBuilder,private http: HttpClient,private route: ActivatedRoute) { 
+      this.route.params.subscribe(
+        params => { this.userid  = params['userid'];}
+        );
+  }
 
   ngOnInit(): void {
   }
 
   send_mail():void{
-    this.http.post<any>('http://localhost:8000/mfa/mail',{address:this.emailForm.value.email,userid:"1"}).subscribe(
+    this.http.post<any>('http://localhost:8000/mfa/mail',{address:this.emailForm.value.email,userid:this.userid}).subscribe(
       data=>{
         this.mailed = false;
         window.alert(data);
@@ -38,7 +44,7 @@ export class EmailComponent implements OnInit {
   }
 
   checkValid():void{
-    this.http.post<any>('http://localhost:8000/mfa/emailValid',{inputCode:this.inputCode,userid:"1"}).subscribe(
+    this.http.post<any>('http://localhost:8000/mfa/emailValid',{inputCode:this.inputCode,userid:this.userid}).subscribe(
       data=>{this.result=data;},
       error=>{
         let err_msg = "404 Not Found: "+error.error;

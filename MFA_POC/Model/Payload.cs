@@ -10,5 +10,9 @@ namespace MFA_POC.Model
         public Payload() { }
 
         public int inputCode { get; set; }
+        public string userId { get; set; }
+
     }
+
+
 }

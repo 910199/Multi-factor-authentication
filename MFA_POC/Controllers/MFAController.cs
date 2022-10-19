@@ -19,36 +19,62 @@ namespace MFA_POC.Controllers
     [ApiController]
     public class MFAController : ControllerBase
     {
-        public MFAController(Dictionary<string, User> _users) { 
+        public MFAController(Dictionary<string, User> _users, Dictionary<string, User_qrcode> _qrusers) { 
             this.generator = new TotpGenerator();
             this.validator = new TotpValidator(this.generator);
-            this.secret_key = "1220";
             this.users = _users;
+            this.qrusers = _qrusers;
         }
         private TotpGenerator generator { get; set; }
         private TotpValidator validator { get; set; }
-        private string secret_key { get; set; }
         private Dictionary<string,User> users { get; set; }
+        private Dictionary<string, User_qrcode> qrusers { get; set; }
 
 
-        [HttpGet]
-        public ActionResult GetURL()
+
+
+        [HttpPost]
+        public ActionResult GetURL([FromBody] Payload payload)
         {
-            
+            User_qrcode user = null;
+            try
+            {
+                user = qrusers[payload.userId];
+            }
+            catch { 
+                user = new User_qrcode(payload);
+                qrusers[user.userId] = user;
+            }
+
+
+            string secret_key = user.secret_key;
             var url = new TotpSetupGenerator().Generate("myapp","jeffery",secret_key);
 
             //var output = generator.Generate(secret_key);
             //var result = validator.Validate(secret_key, output);
             var inputCode = generator.Generate(secret_key);
             Console.WriteLine(inputCode+" "+validator.Validate(secret_key,inputCode));
+
+            Console.WriteLine("qrusers:{");
+            foreach(User_qrcode v in qrusers.Values)
+                Console.WriteLine($"{v.userId} {v.secret_key}");
+            Console.WriteLine("}");
+
             return Ok(url);
         }
 
         [HttpPost("otp")]//{inputCode:[your_otpcode]}
         public ActionResult<bool> TotpValidate([FromBody]Payload payload)
         {
+            User_qrcode user = null;
+            if (qrusers.ContainsKey(payload.userId))
+            {
+                user = qrusers[payload.userId];
+            }
+            else return NotFound("User Not Found!! Incorrect user in the payload.");
+
             //Console.WriteLine($"{payload.inputCode}");
-            var result = validator.Validate(secret_key, payload.inputCode);//看起來1分30秒內的totp都是valid
+            var result = validator.Validate(user.secret_key, payload.inputCode,0);//看起來1分30秒內的totp都是valid  //目前無給予寬裕時間(timeToleranceInSeconds=0)
             return result;
         }
 
@@ -118,6 +144,12 @@ namespace MFA_POC.Controllers
                         client.Disconnect(true);
                     }
                     message.Dispose();
+
+                    Console.WriteLine("users:{");
+                    foreach (User v in users.Values)
+                        Console.WriteLine($"{v.userId} {v.otpCode} {v.address}");
+                    Console.WriteLine("}");
+
                     return Ok(JsonSerializer.Serialize("寄件成功!"));
                 }
                 else throw new Exception("address does not exist!");
@@ -139,10 +171,21 @@ namespace MFA_POC.Controllers
                 user = users[mail.userId];
             }
             catch { return NotFound("User not Found!! No otp available, please type your email to get one."); }
-            
+
+            Console.WriteLine("users:{");
+            foreach (User v in users.Values)
+                Console.WriteLine($"{v.userId} {v.otpCode} {v.address}");
+            Console.WriteLine("}");
+
             if (user.otpCode.Equals(mail.inputCode))
             {
                 users.Remove(user.userId);
+
+                Console.WriteLine("users:{");
+                foreach (User v in users.Values)
+                    Console.WriteLine($"{v.userId} {v.otpCode} {v.address}");
+                Console.WriteLine("}");
+
                 return Ok(true);
             }
             else return Ok(false);

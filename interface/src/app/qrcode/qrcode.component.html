@@ -3,13 +3,19 @@
     <h1>Scan the QRcode Below</h1>
 
     <img *ngIf="url" src={{url}} />
-
+    <div>
+        ManualSetupKey:   {{setupkey}}
+    </div>
+    <p></p>
     <div>
         <label for="otpCode">OTP code (Press Enter to Submit) : </label>
         <input id="otpCode" [(ngModel)]="inputCode"   placeholder="OTP CODE" (change)="checkValid()">
     </div>
+    
     <div *ngIf="inputCode">
         MFA TOTP Result: {{ result }}
     </div>
+
+    userid: {{userid}}
 
 </div>
