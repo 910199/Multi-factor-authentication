@@ -11,6 +11,7 @@ namespace MFA_POC.Model
 
         public int inputCode { get; set; }
         public string userId { get; set; }
+        public string issuer { get; set; }
 
     }
 

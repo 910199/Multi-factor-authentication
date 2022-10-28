@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MFA_POC.Model;
+using Microsoft.EntityFrameworkCore;
 
 namespace MFA_POC
 {
@@ -27,8 +28,6 @@ namespace MFA_POC
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<Dictionary<string, User>, Dictionary<string, User>>();
-            services.AddSingleton<Dictionary<string, User_qrcode>, Dictionary<string, User_qrcode>>();
             services.AddControllers().AddNewtonsoftJson();
 
             services.AddCors(options =>
@@ -39,6 +38,8 @@ namespace MFA_POC
                                       builder.AllowAnyOrigin().AllowAnyHeader();
                                   });
             });
+            services.AddDbContext<UsersDbContext>(
+                options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
 
         }

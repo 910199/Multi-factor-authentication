@@ -13,20 +13,39 @@ namespace MFA_POC.Model
         {
             this.address = mail.address;
             this.userId = mail.userId;
-            this.otpCode = RandomCode();
+            this.mail_otpCode = RandomCode(8);
+        }
+
+        public User(Payload payload)
+        {
+            this.userId = payload.userId;
+            this.secret_key = RandomCode(4) + this.userId + RandomCode(4);
+        }
+
+        public void SetUser(User user)
+        {
+            this.secret_key = user.secret_key;
+        }
+        public void SetUser(Mail mail)
+        {
+            this.address = mail.address;
+            this.mail_otpCode = RandomCode(8);
         }
 
         public string userId { get; set; }
         public string address { get; set; }
-        public string otpCode { get; set; }
-        public MemoryStream stream { get; set; }
+        public string mail_otpCode { get; set; }
 
-        public string RandomCode()
+        public string secret_key { get; set; }
+
+        public bool first_entry { get; set; } = true;
+
+        public string RandomCode(int output_len)
         {
             string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             string randomed_20chars = "";
             string out_str = "";
-            int out_str_len = 8;
+            int out_str_len = output_len;
             var random = new Random();
 
             for (int i = 0; i < 20; i++)
@@ -43,4 +62,5 @@ namespace MFA_POC.Model
 
         
     }
+
 }
