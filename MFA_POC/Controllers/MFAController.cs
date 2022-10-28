@@ -35,9 +35,12 @@ namespace MFA_POC.Controllers
         }
         private TotpGenerator generator { get; set; }
         private TotpValidator validator { get; set; }
+        
+        //!!!---
 
-                  
-
+        //all userId here, equals to the AccountId in gdms
+        
+        //---!!!
         [HttpPost] //{userId:[userId], issuer: [project_name]}
         public ActionResult GetURL([FromBody] Payload payload)
         {
@@ -79,7 +82,8 @@ namespace MFA_POC.Controllers
 
             
 
-            return Ok(url);
+            return Ok(url);//  data is the url json object front end get.       this.url = data.qrCodeImage;   this.setupkey = data.manualSetupKey;  
+
         }
         
         [HttpPost("[action]")] //{userid}
