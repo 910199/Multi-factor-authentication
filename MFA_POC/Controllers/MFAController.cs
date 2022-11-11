@@ -26,7 +26,8 @@ namespace MFA_POC.Controllers
         private readonly UsersDbContext _context;
         private readonly IServiceScopeFactory _services;
         private readonly IConfiguration Configuration;
-        public MFAController(UsersDbContext context, IServiceScopeFactory services, IConfiguration configuration) {
+        public MFAController(UsersDbContext context, IServiceScopeFactory services, IConfiguration configuration)
+        {
             this.Configuration = configuration;
             this.generator = new TotpGenerator();
             this.validator = new TotpValidator(this.generator);
@@ -35,24 +36,20 @@ namespace MFA_POC.Controllers
         }
         private TotpGenerator generator { get; set; }
         private TotpValidator validator { get; set; }
-        
-        //!!!---
 
-        //all userId here, equals to the AccountId in gdms
-        
-        //---!!!
-        [HttpPost] //{userId:[userId], issuer: [project_name]}
+
+        [HttpPost] //{AccountId:[AccountId], issuer: [project_name]}
         public ActionResult GetURL([FromBody] Payload payload)
         {
             string issuer = "gdms";
-            if(payload.issuer!=null)
+            if (payload.issuer != null)
                 issuer = payload.issuer;
-            Console.WriteLine("issuer: "+issuer);
+            Console.WriteLine("issuer: " + issuer);
 
 
 
-            User user = _context.Users.Find(payload.userId);
-            if (user == null || user.secret_key==null) //when email has userid, it might not have used the totp before, thus secret_key is not available
+            User user = _context.Users.Find(payload.AccountId);
+            if (user == null || user.secret_key == null) //when email has AccountId, it might not have used the totp before, thus secret_key is not available
             {
                 //build user
                 User totp_user = new User(payload);
@@ -70,50 +67,50 @@ namespace MFA_POC.Controllers
 
             }
 
-          
+
 
 
             string secret_key = user.secret_key;
-            var url = new TotpSetupGenerator().Generate(issuer,"Id_"+user.userId,secret_key);
+            var url = new TotpSetupGenerator().Generate(issuer, "Id_" + user.AccountId, secret_key);
 
-            
+
             var inputCode = generator.Generate(secret_key);
-            Console.WriteLine(inputCode+" "+validator.Validate(secret_key,inputCode));
+            Console.WriteLine(inputCode + " " + validator.Validate(secret_key, inputCode));
 
-            
+
 
             return Ok(url);//  data is the url json object front end get.       this.url = data.qrCodeImage;   this.setupkey = data.manualSetupKey;  
 
         }
-        
-        [HttpPost("[action]")] //{userid}
+
+        [HttpPost("[action]")] //{AccountId}
         public ActionResult<bool> CheckFirstEntry([FromBody] Payload payload)
         {
-            User user = _context.Users.Find(payload.userId);
+            User user = _context.Users.Find(payload.AccountId);
             if (user == null) return true;
             else return user.first_entry;
         }
 
-        [HttpPost("otp")]//{userId:[userId], inputCode:[your_otpcode]}
-        public ActionResult<bool> TotpValidate([FromBody]Payload payload)
+        [HttpPost("otp")]//{AccountId:[AccountId], inputCode:[your_otpcode]}
+        public ActionResult<bool> TotpValidate([FromBody] Payload payload)
         {
-            User user = _context.Users.Find(payload.userId);
-            if (user==null || user.secret_key==null)
+            User user = _context.Users.Find(payload.AccountId);
+            if (user == null || user.secret_key == null)
             {
                 return NotFound("User Not Found!! OTP Not Available! Please scan the QRcode to get otp.");
             }
 
             //Console.WriteLine($"{payload.inputCode}");
-            var result = validator.Validate(user.secret_key, payload.inputCode,0);//看起來1分30秒內的totp都是valid  //目前無給予寬裕時間(timeToleranceInSeconds=0)
+            var result = validator.Validate(user.secret_key, payload.inputCode, 0);//看起來1分30秒內的totp都是valid  //目前無給予寬裕時間(timeToleranceInSeconds=0)
             if (result)
             {
                 user.first_entry = false;
                 _context.SaveChanges();
-            } 
+            }
             return result;
         }
 
-        [HttpPost("mail")] //{"userid":"1", "address":"jeffery910199@gmail.com"}
+        [HttpPost("mail")] //{"AccountId":"1", "address":"jeffery910199@gmail.com"}
         public ActionResult SendMail(Mail mail)
         {
             try
@@ -121,7 +118,7 @@ namespace MFA_POC.Controllers
                 if (mail.address != "")
                 {
                     var mail_user = new User(mail);
-                    User user = _context.Users.Find(mail.userId);
+                    User user = _context.Users.Find(mail.AccountId);
                     if (user == null)
                     {
                         _context.Users.Add(mail_user);
@@ -133,7 +130,7 @@ namespace MFA_POC.Controllers
                     }
                     _context.SaveChanges();
 
-                    
+
 
                     MemoryStream stream = ConvertHtmlToImage(user.mail_otpCode);
 
@@ -155,7 +152,7 @@ namespace MFA_POC.Controllers
                     var bodyBuilder = new BodyBuilder();
                     // 設定文字內容
                     //bodyBuilder.TextBody = "MIME_TEST";       //用不到
-                    
+
                     stream = new MemoryStream(stream.ToArray());  //由MemoryStream轉byte[],再轉MemoryStream才可用，不知為何不能直接用MemoryStream
                     var image = bodyBuilder.LinkedResources.Add("otpCode.jpg", stream);
                     image.ContentId = MimeUtils.GenerateMessageId();
@@ -164,14 +161,14 @@ namespace MFA_POC.Controllers
                     MemoryStream destination = new MemoryStream(stream.ToArray());
                     bodyBuilder.Attachments.Add("otpCode.jpg", destination);;*/
 
-                    bodyBuilder.HtmlBody = string.Format(@"<p> Your OTP code is {0}, please enter the code to validate your identification </p > <img src=""cid:{1}"">", user.mail_otpCode, image.ContentId);
+                    bodyBuilder.HtmlBody = string.Format(@"<p>Following will be your OTP code, please enter the code to validate your identification </p > <img src=""cid:{0}"">", image.ContentId);
 
                     // 設定郵件內容
                     message.Body = bodyBuilder.ToMessageBody();
 
                     using (var client = new SmtpClient())
                     {
-                        var hostUrl = "smtp.gmail.com"; 
+                        var hostUrl = "smtp.gmail.com";
                         var port = 465;
                         var useSsl = true;  //gmail預設開啟ssl驗證
                         /*
@@ -192,11 +189,12 @@ namespace MFA_POC.Controllers
                         client.Disconnect(true);
                     }
                     message.Dispose();
-                    
+
                     //After how much time the otp code would be invalid( not available )
                     Thread t = new Thread(() =>
                     {
-                        int seconds = 10; //sleep for how many seconds
+                        int minutes = 10;
+                        int seconds = minutes * 60; //sleep for how many seconds
                         Thread.Sleep(seconds * 1000);
                         Console.WriteLine($"user_otp:{user.mail_otpCode}");
                         DeleteMailInfo(user);
@@ -207,12 +205,12 @@ namespace MFA_POC.Controllers
                 }
                 else throw new Exception("address is blank!");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e);
                 return BadRequest(e);
             }
-            
+
         }
 
         [NonAction]
@@ -222,9 +220,9 @@ namespace MFA_POC.Controllers
             UsersDbContext _context = scope.ServiceProvider.GetRequiredService<UsersDbContext>();
 
 
-            var user2remove = _context.Users.Find(user.userId);
+            var user2remove = _context.Users.Find(user.AccountId);
 
-            if (user2remove == null || user2remove.mail_otpCode == null) 
+            if (user2remove == null || user2remove.mail_otpCode == null)
             {
                 Console.WriteLine("user has been removed.");
             }
@@ -246,22 +244,22 @@ namespace MFA_POC.Controllers
         }
 
 
-        [HttpPost("[action]")] //{   "userId":"1",   "inputCode":"OY5MVEMM"}
+        [HttpPost("[action]")] //{   "AccountId":"1",   "inputCode":"OY5MVEMM"}
         public ActionResult EmailValid([FromBody] Mail mail)
         {
-            User user = _context.Users.Find(mail.userId);
+            User user = _context.Users.Find(mail.AccountId);
             if (user == null || user.mail_otpCode == null)
             {
                 return NotFound("User not Found!! No otp available, please type your email to get one.");
             }
-            
 
-            
+
+
             if (user.mail_otpCode.Equals(mail.inputCode))
             {
 
                 DeleteMailInfo(user);
-                                
+
                 return Ok(true);
             }
             else return Ok(false);
@@ -273,11 +271,11 @@ namespace MFA_POC.Controllers
             string otpCode = "MWrr0mPt";
             MemoryStream stream = ConvertHtmlToImage(otpCode);
 
-            
+
             //儲存照片
             var bytes = stream.ToArray();
             System.IO.File.WriteAllBytes(@"C:\Users\jeffery.chen\Desktop\MFA_POC\img\image.jpg", bytes);
-            
+
             return Ok();
         }
 

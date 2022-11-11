@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
+using System.ComponentModel.DataAnnotations;
 
 namespace MFA_POC.Model
 {
@@ -12,14 +13,14 @@ namespace MFA_POC.Model
         public User(Mail mail)
         {
             this.address = mail.address;
-            this.userId = mail.userId;
+            this.AccountId = mail.AccountId;
             this.mail_otpCode = RandomCode(8);
         }
 
         public User(Payload payload)
         {
-            this.userId = payload.userId;
-            this.secret_key = RandomCode(4) + this.userId + RandomCode(4);
+            this.AccountId = payload.AccountId;
+            this.secret_key = RandomCode(4) + this.AccountId + RandomCode(4);
         }
 
         public void SetUser(User user)
@@ -32,13 +33,15 @@ namespace MFA_POC.Model
             this.mail_otpCode = RandomCode(8);
         }
 
-        public string userId { get; set; }
+        [Key]
+        public string AccountId { get; set; }
         public string address { get; set; }
         public string mail_otpCode { get; set; }
 
         public string secret_key { get; set; }
 
         public bool first_entry { get; set; } = true;
+        public bool AuthenticationEnable { get; set; } = false;
 
         public string RandomCode(int output_len)
         {
@@ -60,7 +63,7 @@ namespace MFA_POC.Model
 
         }
 
-        
+
     }
 
 }

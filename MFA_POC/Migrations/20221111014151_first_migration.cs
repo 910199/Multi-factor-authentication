@@ -10,7 +10,7 @@ namespace MFA_POC.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    userId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    AccountId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     mail_otpCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     secret_key = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -18,7 +18,7 @@ namespace MFA_POC.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.userId);
+                    table.PrimaryKey("PK_Users", x => x.AccountId);
                 });
         }
 

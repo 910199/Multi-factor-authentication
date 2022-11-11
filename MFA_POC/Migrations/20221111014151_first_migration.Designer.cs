@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MFA_POC.Migrations
 {
     [DbContext(typeof(UsersDbContext))]
-    [Migration("20221026064855_first_migration")]
+    [Migration("20221111014151_first_migration")]
     partial class first_migration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -22,7 +22,7 @@ namespace MFA_POC.Migrations
 
             modelBuilder.Entity("MFA_POC.Model.User", b =>
                 {
-                    b.Property<string>("userId")
+                    b.Property<string>("AccountId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("address")
@@ -37,7 +37,7 @@ namespace MFA_POC.Migrations
                     b.Property<string>("secret_key")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("userId");
+                    b.HasKey("AccountId");
 
                     b.ToTable("Users");
                 });
